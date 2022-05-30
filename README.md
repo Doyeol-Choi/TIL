@@ -12,5 +12,7 @@
 * [테이블제어](SQL/tablecontrol.md)
 * [데이터무결성 및 제약조건](SQL/Integrity_Constraint.md)
 * [시퀀스와 인덱스](SQL/sequence_index.md)
+* [뷰](SQL/view.md)
+* [사용자권한](SQL/grant.md)
 ## GIT
 * [GIT BASH 기초](GIT/git.md)
