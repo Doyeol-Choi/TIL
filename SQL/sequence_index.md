@@ -11,33 +11,45 @@
 * startwith : 시퀀스 시작을 지정
 * increment by : 연속적인 시퀀스 번호의 증가치를 지정할 때 사용
 * cycle : 시퀀스의 값이 최대까지 증가하면 처음부터 다시 시작한다.
-  - nocycle지정시 시퀀스의 값이 최대 이후 증가를 하면 에러 발생
+  - nocycle 지정시 시퀀스의 값이 최대 이후 증가를 하면 에러 발생
 
 ## 시퀀스 개념
 * currval : 시퀀스의 현재 값을 알아보기
-  - SELECT seq_sample.currval FROM dual;
+  ```sql
+  SELECT seq_sample.currval FROM dual;
+  ```
 * nextval : 시퀀스의 다음 값을 알아보기
-  - SELECT seq_sample.nextval FROM dual;
+  ```sql
+  SELECT seq_sample.nextval FROM dual;
+  ```
 * 주로 INSERT 할 때 사용한다.
 
 ## 시퀀스 수정 및 제거
 * 시퀀스도 오라클의 다른 개체와 마찬가지로 수정 및 삭제가 가능하다.
-* ALTER SEQUENCE 시퀀스이름 ~~
+  ```sql
+  ALTER SEQUENCE 시퀀스이름 ~~
+  ```
 * 단 생성과 차이점이 있다면 START WITH를 사용할 수 없다는 점이다.
   - 이미 생성되어 사용중인 시퀀스의 시작값을 변경할 순 없다.
 * 제거는 DROP명령을 사용한다.
-* DROP SEQUENCE 시퀀스이름
+  ```sql
+  DROP SEQUENCE 시퀀스이름
+  ```
 
 ## 일반적인 시퀀스 생성 형태
-* CREATE SEQUENCE 테이블명_seq NOCACHE;
+```sql
+CREATE SEQUENCE 테이블명_seq NOCACHE;
+```
 
 ----------------------------------------------------------
 # 인덱스
 * 인덱스란 검색속도를 향상시키기 위해서 사용하는 도구이다.
 * 필요에 의해 직접 생성할 수도 있지만 무결성 확보를 위해 수시로 데이터를 검색하는 용도로 사용하는 기본키나 유니크키는 자동으로 인덱스가 생성된다. (생성시 특정 컬럼에 생성)
 * 사용법
-  - CREATE INDEX 인덱스명 ON 테이블명(컬럼명) - 생성
-  - DROP INDEX 인덱스명 - 삭제
+  ```sql
+  CREATE INDEX 인덱스명 ON 테이블명(컬럼명) -- 생성
+  DROP INDEX 인덱스명 -- 삭제
+  ```
 
 ## 장점
  * 검색속도가 빨라질 수 있다. (항상 그런 것은 아니다.)

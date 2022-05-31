@@ -71,13 +71,19 @@
   - 제약조건 제거 : drop
 
 * add 의 예시
-  - ALTER TABLE reg_copy ADD CONSTRAINT reg_copy_stuno_fk FOREIGN KEY(stuno) REFERENCES student(stuno);
+  ```sql
+  ALTER TABLE reg_copy ADD CONSTRAINT reg_copy_stuno_fk FOREIGN KEY(stuno) REFERENCES student(stuno);
   - ALTER TABLE stu_copy ADD CONSTRAINT stu_copy_stuno_pk PRIMARY KEY(stuno);
+  ```
 * modify 의 예시
-  - ALTER TABLE stu_copy MODIFY major CONSTRAINT stu_copy_major_nn NOT NULL;
+  ```sql
+  ALTER TABLE stu_copy MODIFY major CONSTRAINT stu_copy_major_nn NOT NULL;
+  ```
 * drop 의 예시
-  - ALTER TABLE stu_copy DROP PRIMARY KEY;
-  - ALTER TABLE stu_copy DROP CONSTRAINT stu_copy_major_nn;
+  ```sql
+  ALTER TABLE stu_copy DROP PRIMARY KEY;
+  ALTER TABLE stu_copy DROP CONSTRAINT stu_copy_major_nn;
+  ```
 
 ----------------------------------------------------------
 ### 제약조건 비활성화
