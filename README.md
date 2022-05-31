@@ -14,5 +14,8 @@
 * [시퀀스와 인덱스](SQL/sequence_index.md)
 * [뷰](SQL/view.md)
 * [사용자권한](SQL/grant.md)
+* [PLSQL](SQL/PLSQL.md)
+* [프로시저](SQL/procedure.md)
 ## GIT
 * [GIT BASH 기초](GIT/git.md)
+* [GITHUB md 사용하기](https://goddaehee.tistory.com/307)
