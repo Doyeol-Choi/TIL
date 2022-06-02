@@ -16,6 +16,7 @@
 * [사용자권한](SQL/grant.md)
 * [PLSQL](SQL/PLSQL.md)
 * [프로시저](SQL/procedure.md)
+* [설계](SQL/plan.md)
 ## GIT
 * [GIT BASH 기초](GIT/git.md)
 * [GITHUB md 사용하기](https://goddaehee.tistory.com/307)
