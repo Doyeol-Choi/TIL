@@ -1,6 +1,9 @@
 # TIL
 ## JAVA
 * [Collection](JAVA/collection.md)
+## JSP & Servlet
+* [개요](JSP/web.md)
+* [Servlet](JSP/servlet.md)
 ## SQL
 * [계정생성](SQL/account.md)
 * [쿼리기본](SQL/query.md)
