@@ -4,6 +4,8 @@
 ## JSP & Servlet
 * [개요](JSP/web.md)
 * [Servlet](JSP/servlet.md)
+* [JSP](JSP/jsp.md)
+* [JSP 내장객체와 액션태그](JSP/ImplicitObject.md)
 ## SQL
 * [계정생성](SQL/account.md)
 * [쿼리기본](SQL/query.md)
