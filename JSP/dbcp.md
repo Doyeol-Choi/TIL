@@ -25,4 +25,3 @@
   - maxIdle : Connection Pool에 반납할 때 최대로 유지될 수 있는 커넥션 개수
   - minIdle : 최소한으로 유지할 커넥션 개수
   - maxWaitMillis : pool이 고갈되었을 경우 최대 대기 시간
-

@@ -11,6 +11,7 @@
 * [표현 언어](JSP/EL.md)
 * [데이터베이스와 JDBC](JSP/jdbc.md)
 * [커넥션 풀](JSP/dbcp.md)
+* [파일 업로드](JSP/upload.md)
 ## SQL
 * [계정생성](SQL/account.md)
 * [쿼리기본](SQL/query.md)
