@@ -107,3 +107,65 @@
     <br>
 
 18. 페이징
+    - 샘플 데이터를 많이 넣어놓는다 (1000개)
+    - 알고리즘
+    - 쿼리
+    - DAO 쿼리에 맞는 메서드 추가
+    - 기존 목록 보기 기능 클래스를 수정
+    - 목록 뷰 페이지를 수정
+
+---------------------------------------------------------
+### 페이징 알고리즘
+* 한 페이지에 나올 목록의 수가 10개로 가정
+
+* 1 ~ 10 페이지를 섹션으로 나눔  
+ex) 1~10은 1번 섹션, 11~20은 2번 섹션... 
+
+* 알아야할 정보 (756번 게시물을 보고 싶다면)
+  - 섹션 정보 : 8번 섹션 (701~800번째의 게시물들)
+  - 페이지 정보 : 6번 페이지 (751~760번째의 게시물들)
+
+* 조건절 (섹션 S = 8, 페이지 P = 6)
+  - WHERE 글번호 BETWEEN 751 AND 760;
+    + (S-1)x100 + (P-1)x10+1 ~ (S-1)x100 + (P)x10
+  
+  - WHERE 글번호 BETWEEN (S-1)x100+(P-1)x10+1 AND (S-1)x100+(P)x10;
+
+* 글 번호 => ROWID => SELECT할 때마다 새롭게 조회
+
+* 전체 쿼리
+  - 1단계 : 전체 글을 조회해서 ROWID를 추출한다.
+    ```sql
+    SELECT * FROM boardTbl ORDER BY num DESC;
+    -- boardTbl 테이블 명, num 컬럼명
+    ```
+  
+  - 2단계 : ROWID를 포함한 조회문 작성
+    ```sql
+    SELECT ROWNUM as nick, num, name, email, pass, title, content, readcount, writedate FROM (SELECT * FROM boardTbl ORDER BY num DESC);
+    ```
+  
+  - 3단계 : 위 조건을 제시
+    ```sql
+    SELECT * FROM (SELECT ROWNUM as nick, num, name, email, pass, title, content, readcount, writedate FROM (SELECT * FROM boardTbl ORDER BY num DESC)) WHERE nick BETWEEN (S-1)x100+(P-1)x10+1 AND (S-1)x100+(P)x10;
+    ```
+
+---------------------------------------------------------
+# Ajax
+* 기존의 HTTP 통신 => 비동기 통신
+
+* Ajax => 동기 통신
+  - 페이지 전체를 새로고침 하는 것이 아니라 페이지를 구성하는 일부 데이터만 전송하고 전달하는 방법
+
+* 자바 스크립트를 활용한 기술이다.
+  - 내부적으로 서버와 통신하는 기술
+  - 그냥 자바 스크립트로만 하기 어렵기 때문에 jQuery 활용
+
+* 서로 다른 프로그램언어 사이의 데이터 교환 수단
+ - xml(과거) => json
+
+ 1. 클라이언트에서 서버로 "문자열"
+ 2. 클라이언트에서 서버로 "객체" => JSON
+
+ 3. 서버에서 클라이언트로 "문자열"
+ 4. 서버에서 클라이언트로 "객체" => JSON
