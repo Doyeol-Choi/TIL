@@ -36,3 +36,5 @@
 * [Spring 시작하기](SPRING/start.md)
 * [스프링 DI](SPRING/DI.md)
 * [자동 주입](SPRING/autowired.md)
+* [자바 코드로 설정](SPRING/javacode.md)
+* [빈](SPRING/bean.md)
