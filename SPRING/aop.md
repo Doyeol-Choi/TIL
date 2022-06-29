@@ -1,4 +1,4 @@
-# AOP
+# AOP (aspect-oriented programming, 관점 지향 프로그래밍)
 * 준비한 예제의 두 구현 클래스의 실행 시간을 출력하고자 한다.
 
 * 일반적인 방법은 메서드 시작과 끝에 시간을 구하고 이것을 출력하는 것이다.
@@ -314,3 +314,208 @@
     // 자바 설정 파일 => 메인에서 불러오는 방식 바꿔준다.
     AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(JavaConfig.class);
     ```
+
+## ProceedingJoinPoint 객체
+* 보통의 경우 Around Advice 에서 사용할 공통의 기능 메서드는 대부분 파라미터로 전달 받은 ProceedingJoinPoint 의 proceed() 메서드만 호출하면 된다.
+    ```java
+    public Object m(ProceedingJoinPoint jp) throws Throwable {	
+		long start = System.nanoTime();
+	
+		Object result = jp.proceed();	// 핵심기능을 수행하세요.
+
+        return result;
+    }
+    ```
+
+* 이 경우에도 호출되는 대상 객체의 정보 , 실행되는 메서드에 대한 정보, 메서드를 호출할 때 전달되는 매개값에 대한 정보가 필요할 때가 있다.
+
+* 이때 ProceedingJoinPoin 객체에는 다음과 같은 메서드를 제공한다.
+  - Signature getSignature() - 호출되는 메서드에 대한 정보를 구한다.
+  - Object getTarget() - 대상 객체를 구한다.
+  - Object[] getArgs() - 파라미터 목록을 구한다.
+
+* 또한 Signature 인터페이스는 다음과 같은 메서드를 제공한다.
+  - String getName() - 메서드의 이름을 구한다.
+  - String toLongString() - 메서드를 완전하게 표현한 문장을 구한다. (리턴타입, 파라미터 타입이 모두 표시)
+  - String toShortString() - 메서드를 축약해서 표현한 문자을 구한다.
+
+    ```java
+    Signature sig = jp.getSignature();	// 핵심기능을 가진 메서드의 정보를 꺼내보는 기능
+    String methodName = sig.getName();	// 메서드의 이름
+    String methodAllInfo = sig.toLongString();	// 메서드의 정보(매개정보, 반환정보)
+    jp.getTarget();	// 대상 객체 => object타입
+    String className = jp.getTarget().getClass().getSimpleName();	// 대상 객체의 이름정보
+    jp.getArgs();	//매개값의 정보 => 배열
+    String argName = Arrays.toString(jp.getArgs());	// 배열을 문자열로 전환
+    ```
+
+## 프록시 생성 방식
+* 기존의 MainXMLPOJO 객체에는 다음과 같은 내용이 있다.
+    ```java
+    Calculator impeCal = ctx.getBean("impeCal", Calculator.class);
+    ```
+* 위 내용을 다음과 수정을 해도 사용이 가능할 것인가?
+    ```java
+    ImpeCalculator impeCal = ctx.getBean("impeCal", ImpeCalculator.class);
+    ```
+
+* 일반적인 자바 클래스는 사용이 가능해야 하지만 실행해 보면 에러가 발생한다.
+
+* 그 이유는 getBean 으로 생성되는 객체가 실제 객체가 아닌 프록시 객체인데 이 프록시객체는 ImpeCalculator 클래스가 구현받은 Calculator 인터페이스를 구현받아 생성되기 때문이다.
+
+* 빈 객체가 인터페이스를 구현 받고 있을 때 인터페이스가 아닌 클래스를 이용해서 프록시를 생성하고 싶다면 다음과 같은 설정을 해주면 된다.
+  - POJO 방식의 XML 설정
+    ```xml
+    <aop:config proxy target class="true">
+    ```
+  - @Aspect 방식의 XML 설정
+    ```xml
+    <aop:aspectj autoproxy proxy target class="true"/>
+    ```
+  - @Aspect 방식의 자바 설정
+    ```java
+    @Configuration
+    @EnableAspectJAutoProxy(proxyTargetClass=true)
+    public class
+    JavaConfig {...}
+    ```
+
+## execution 명시자 표현식
+* Aspect를 적용할 위치를 지정할 때 사용한 Pointcut 설정을 보면 다음과 같이 execution명시자를 사용했다.
+    ```java
+    @Pointcut("execution(public * chap07..*(..))")
+    private void publicTarget () {}
+    ```
+
+* execution 명시자는 Advice를 적용할 메서드를 지정할 때 사용되며 형식은 다음과 같다.
+    ```
+    execution(수식어패턴? 리턴타입패턴 클래스이름패턴? 메서드이름패턴 (파라미터패턴))
+    ```
+
+* ‘수식어패턴'은 생략이 가능한 부분으로 public,protected 등이 온다. 스프링 AOP의 경우 public만 적용이 가능하므로 무의미하다.
+
+* ‘리턴타입패턴'은 리턴타입을 명시한다.
+
+* ‘클래스이름패턴'과 메서드이름패턴 은 클래스 이름 및 메서드 이름을 패턴으로 명시한다.
+
+* ‘파라미터 패턴' 부분은 매칭될 파라미터에 대해서 명시한다.
+
+* *로 표기하는 경우 모든 값을 표기할 수 있다.
+
+* ..을 이용해서 0개 이상이라는 의미도 표기할 수 있다.
+
+* 명시자 표현식 => 메서드를 찾는 방법(메서드의 정보가 필요)
+  1) 대상 객체
+  2) public void method(int a, int b){...}
+      1. public
+      2. void, int, long, String, double[], List&lt;m&gt;.....
+      3. 메서드의 이름
+      4. 매개변수의 정보 => 타입, 개수, 순서
+
+* publuc * spring... * (...) => AOP프록시에서 잡아내야할 메서드
+  - public => public이 아닌 메서드는 통과
+  - 반환타입 => 어떤 반환 타입을 가지든 프록시에 잡아냄
+  - spring.. => spring 패키지의 모든 클래스를 프록시에 잡아냄
+  - \* 메서드 이름 => 어떤 이름의 메서드이든 프록시에 잡아냄
+  - (..)매개변수 => 매개변수의 개수가 0 개 이상이면 프록시에 잡아냄
+
+* execution 명시자의 몇가지 예
+  - execution(public void set*(..))  
+  -> 반환타입이 void이고 메서드 이름은 set으로 시작하며 파라미터가 0개 이상인 메서드 호출
+
+  - execution(* chap07.*.*())  
+  -> chap07 패키지의 타입에 속한 파라미터가 없는 모든 메서드 호출
+
+  - execution (* chap07..*.*(..))  
+  -> chap07 패키지및 하위 패키지에 있는 파라미터가 0 개 이상인 메서드 호출
+
+  - execution(Long chap07.Calculator.factorial(..))  
+  -> 반환 타입이 Long 인 Calculator 타입의 factorial 메서드를 호출
+
+  - execution(* get*(*))  
+  -> 이름이 get 으로 시작하고 1 개의 파라미터를 가지는 메서드 호출
+
+  - execution (* get*(*,*))  
+  -> 이름이 get 으로 시작하고 2 개의 파라미터를 가지는 메서드 호출
+
+  - execution (* read*(Integer,..))  
+  -> 메서드 이름이 read로 시작하고, 첫번째 파라미터 타입이 Integer이며, 1개 이상의 파라미터를 갖는 메서드 호출
+
+## Advice 적용 순서
+* CacheAspect는 일종의 캐시를 구현한 Aspect로 실행 결과를 Map에 보관했다가 다음 동일한 요청이 들어오면 Map에 저장된 결과를 반환한다.
+
+* 동일한 작업을 수행하지 않으므로 결과적으로 시간을 줄여준다.
+
+* 캐시의 효과를 보려면 다음과 같은 순서로 실행되어야 한다.
+  - 실행시간 측정 프록시 -> 캐시 프록시 -> 실행 대상 객체
+
+* 이렇듯 Aspect의 적용 순서가 중요한 경우 순서를 직접 정해 주어야 한다.
+
+* 다음 CacheAspect 클래스를 만들자
+    ```java
+    public class CacheAspect {
+
+        private Map<Long, Object> cache = new HashMap<>();	// 정보를 임시로 저장할 공간
+        
+        public Object execute(ProceedingJoinPoint joinPoint) throws Throwable {
+            Long num = (Long) joinPoint.getArgs()[0];
+            
+            if(cache.containsKey(num)) {
+                System.out.println("캐시Aspect에서 구함 : " + num);
+                return cache.get(num);
+            }
+            
+            Object result = joinPoint.proceed();
+            cache.put(num, result);	// 핵심 기능의 결과를 캐시에 저장
+            System.out.println("캐시Aspect에 저장 : " + num);
+            
+            return result;
+        }
+    }
+    ```
+
+* XML스키마 기반 AOP설정을 사용하는 경우 &lt;aop:aspect&gt; 태그에 order 속성을 이용한다.
+    ```xml
+    <!-- 공통의 기능을 제공한 객체를 빈으로 등록 -->
+	<bean class="spring.aspect.ExeTimeAspect01" id="exeTimeAspect"/>
+	<bean class="spring.aspect.CacheAspect" id="cacheAspect"/>
+	
+	<!-- AOP 설정 -->
+	<aop:config>
+		<aop:aspect id="mAspect" ref="exeTimeAspect" order="0">
+			<aop:pointcut expression="execution(public * spring.calc..*(..))" id="pMethod"/>
+			<aop:around method="m" pointcut-ref="pMethod"/>
+		</aop:aspect>
+		
+		<aop:aspect id="cAspect" ref="cacheAspect" order="1">
+			<aop:pointcut expression="execution(public * spring.calc..*(..))" id="cMethod"/>
+			<aop:around method="execute" pointcut-ref="cMethod"/>
+		</aop:aspect>
+	</aop:config>
+	
+	<!-- 사용할 핵심 기능을 가진 객체를 빈으로 등록 -->
+	<bean class="spring.calc.ImpeCalculator" id="impeCalc"/>
+	<bean class="spring.calc.RecCalculator" id="recCalc"/>
+    ```
+
+* Main 클래스로 확인해 본다.
+    ```java
+    public static void main(String[] args) {
+		
+		GenericXmlApplicationContext ctx = new GenericXmlApplicationContext("classpath:appCtx03.xml");
+		
+		Calculator calc = ctx.getBean("impeCalc", Calculator.class);
+		
+		calc.factorial(10);
+		
+		calc.factorial(10);
+	}
+    ```
+
+* @Aspect 어노테이션을 사용하는 경우
+    ```java
+    @Aspect
+    @Order(1)   // 여러개의 Aspect객체에서 우선순위를 정하는 방법
+    public class ExeTimeAspect {….}
+    ```
+
