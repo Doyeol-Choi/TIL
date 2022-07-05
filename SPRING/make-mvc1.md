@@ -129,7 +129,7 @@
     ```
 
 * views/register/step1.jsp
-	```jsp
+	```html
 	<title>회원 가입</title>
 	</head>
 	<body>
@@ -300,7 +300,7 @@
 		</bean>
 		```
   3) 처리 후 이동할 페이지 작성 : step3.jsp
-		```jsp
+		```html
 		<title>회원 가입</title>
 		</head>
 		<body>
@@ -310,3 +310,325 @@
 		```
 
 ## 뷰 JSP 코드에서 커맨드 객체 사용하기
+* 가입 완료 화면에서 가입할 때 사용한 이메일 주소와 이름을 보여주면 좋을 것이다.
+
+* 이때 커맨드 객체를 사용해서 JSP 를 통해 정보를 표시할 수 있다.
+	```html
+	<p><strong>${registerRequest.name}님! </strong>회원 가입을 완료했습니다.</p>
+	```
+
+* 커맨드 객체의 속성명을 변경하고 싶다면 @ModelAttribute 어노테이션을 사용하면 된다.
+	```java
+	public String handlerStep3(@ModelAttribute("formData")RegisterRequest regReq)
+	```
+	```jsp
+	<p><strong>${formData.name}님! </strong>회원 가입을 완료했습니다.</p>
+	```
+
+## 커맨드 객체와 스프링 폼 연동
+* 회원 정보 입력 폼에서 중복된 이메일을 입력할 경우 회원 정보를 입력하면 안되고 다시 정보를 요구해야 한다.
+
+* 이때 앞서 본 예제는 기존의 입력 내용이 전부 사라지고 텅 빈 폼을 보게 되는데 이때 기존에 입력 내용을 커맨드 객체의 값을 보여 줄 수 있다.
+	```html
+	<form action="step3" method="post">
+		<p>
+			<label> 이메일 : 
+				<input type="text" name="email" id="email" value="${formData.email}">
+			</label>
+		</p>
+		<p>
+			<label> 이름 : 
+				<input type="text" name="name" id="name" value="${formData.name}">
+			</label>
+		</p>
+	```
+
+* 커맨드 객체를 사용하는 경우 스프링 MVC 가 제공하는 커스텀 태그를 사용하면 좀 더 간 편하게 커맨드 객체의 값을 출력할 수 있다.
+
+* 스프링 MVC 가 제공하는 커스텀 태그
+  - &lt;form:form&gt;
+  - &lt;form:input&gt;
+  - &lt;form:password&gt;
+
+	```html
+	<!-- taglib 추가후 -->
+	<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+	<!-- body에 내용을 바꿔준다 -->
+	<!-- spring버전 4.xx까진 commandName을 사용했지만 5.xx부터는 modelAttribute을 사용한다. -->
+	<form:form action="step3" modelAttribute="formData">
+		<p>
+			<label> 이메일 : <br>
+				<form:input path="email"/>
+				<!-- <input type="text" name="email" id="email" value="${formData.email}"> -->
+			</label>
+		</p>
+		<p>
+			<label> 이름 : <br>
+				<form:input path="name"/>
+			</label>
+		</p>
+		<p>
+			<label> 비밀번호 : <br>
+				<form:input path="password"/>
+			</label>
+		</p>
+		<p>
+			<label> 비밀번호 확인 : <br>
+				<form:input path="confirmPassword"/>
+			</label>
+		</p>
+		<input type="submit" value="가입 완료">
+	</form:form>
+	```
+
+* &lt;form:form&gt; 태그는 form 을 생성한다
+  - action : form태그의 action 과 같은 역할 => submit 클릭시 이동할 페이지
+  - commandName : 커맨드 객체 속성 이름을 지정한다. 미설정시 command 로 기본값 사용
+
+* &lt;form:input&gt; 태그는 input 태그를 생성한다.
+  - &lt;form:input path=“name” /&gt; 의 경우 커맨드 객체의 name 프로퍼티 값을 value 에 속성으로 사용한다.
+  - 예를 들어 커맨드 객체에서 name = 홍길동 이라고 한다면 &lt;input id=“name” name=”name” type=“text” value=“홍길동"&gt; 이 생성된다.
+
+* &lt;form:form&gt; 태그를 사용하려면 반드시 커맨드 객체가 필요하다.
+  - step1 에서 step2 로 넘어오는 단계에서 커맨드 객체를 모델에 담아 주어야 한다.
+
+## 컨트롤러 구현 없는 경로 매핑
+* 컨트롤러 중에서는 별도의 처리없이 단순히 뷰 이름만 반환하는 컨트롤러의 경우
+	```java
+	@Controller
+	public class MainController {
+
+		@RequestMapping(value={"/main","/"})
+		public String main() {
+			return "main";
+		}
+	}
+	```
+	```xml
+	<bean class="spring.controller.MainController"></bean>
+	```
+
+* 컨트롤러 중에서는 별도의 처리없이 단순히 뷰 이름만 반환하는 컨트롤러의 경우
+특별한 로직도 없는 컨트롤러를 만드는 성가심을 해소하기 위해 스프링 MVC 는
+&lt;mvc:view controller&gt; 태그를 제공한다.
+	```xml
+	<!-- /main, / 이라는 경로로 들어오는 경우 main.jsp로 바로 연결 시켜주세요 -->
+	<mvc:view-controller path="/main" view-name="main"/>
+	<mvc:view-controller path="/" view-name="main"/>
+	```
+
+## 커맨드 객체 : 중첩, 콜렉션 프로퍼티
+* 예 : 간단한 설문 조사를 한다, 3 가지 설문항목이 있고, 응답자의 지역과 나이를 입력받아야 한다고 가정한다.
+
+* 관련 클래스를 제작한다.
+  - spring.survey.Respondent.java
+		```java
+		public class Respondent {
+			private int age;
+			private String location;
+			
+			public int getAge() {
+				return age;
+			}
+			public void setAge(int age) {
+				this.age = age;
+			}
+			public String getLocation() {
+				return location;
+			}
+			public void setLocation(String location) {
+				this.location = location;
+			}
+		}
+		```
+  - spring.survey.AnsweredData.java
+		```java
+		public class AnswerData {	// 설문 조사지
+			private List<String> responses;	// 설문 답변
+			private Respondent res;			// 답변자 정보
+			
+			public List<String> getResponses() {
+				return responses;
+			}
+			public void setResponses(List<String> responses) {
+				this.responses = responses;
+			}
+			public Respondent getRes() {
+				return res;
+			}
+			public void setRes(Respondent res) {
+				this.res = res;
+			}
+		}
+		```
+
+* 위 클래스는 이전 커맨드 객체와 2 가지 다른 점이 존재한다.
+  - -> 리스트타입의 프로퍼티
+  - -> 중첩 프로퍼티
+
+* 스프링은 위와 같은 프로퍼티를 가진 경우에도 요청 파라미터의 값을 알맞게 설정해준다.
+  - -> HTTP 요청 파라미터 이름이 프로퍼티이름 인덱스 형식이면 List 타입의 프로퍼티 값으로
+  - -> HTTP 요청 파라미터 이름이 프로퍼티이름 프로퍼티이름 형식으면 중첩 프로퍼티 값으로
+
+* 컨트롤러 SurveyController.java
+	```java
+	@Controller
+	@RequestMapping("/survey")
+	public class SurveyController {
+		
+		@GetMapping
+		public String form() {
+			return "survey/surveyForm";
+		}
+		
+		@PostMapping
+		public String submit(@ModelAttribute("ansData") AnswerData data) {
+			return "survey/submitted";
+		}
+	}
+	```
+
+* 빈 등록
+	```xml
+	<bean class="spring.controller.SurveyController"></bean>
+	```
+
+* 매핑에 대응되는 jsp 생성 : surveyForm.jsp
+	```html
+	<form method="post">
+		<p>
+			1. 당신의 역할은? <br>
+			<label> <input type="radio" name="responses[0]" value="프론트"> 프론트 개발자 </label>
+			<label> <input type="radio" name="responses[0]" value="백엔드"> 백엔드 개발자 </label>
+			<label> <input type="radio" name="responses[0]" value="풀스택"> 풀스택 개발자 </label>
+		</p>
+		<p>
+			2. 가장 많이 사용하는 개발 도구는? <br>
+			<label> <input type="radio" name="responses[1]" value="Eclipse"> Eclipse </label>
+			<label> <input type="radio" name="responses[1]" value="IntelliJ"> IntelliJ </label>
+			<label> <input type="radio" name="responses[1]" value="NetBeans"> NetBeans </label>
+		</p>
+		<p>
+			3. 하고 싶은 말 <br>
+			<input type="text" name="responses[2]">
+		</p>
+		<p>
+			<label> 응답자 위치 : 
+				<input type="text" name="res.location">
+			</label>
+		</p>
+		<p>
+			<label> 응답자 나이 : 
+				<input type="text" name="res.age">
+			</label>
+		</p>
+		<input type="submit" value="전송">
+	</form>
+	```
+
+* 매핑에 대응되는 jsp 생성 : submitted.jsp
+	```html
+	<h2>응답 내용</h2>
+	<p>
+		<ul>
+			<c:forEach items="${ansData.responses}" var="response" varStatus="status">
+				<li>${status.index+1}번 문항 : ${response}</li>
+			</c:forEach>
+		</ul>
+	</p>
+	
+	<p>응답자 위치 : ${ansData.res.location}</p>
+	<p>응답자 나이 : ${ansData.res.age}</p>
+	```
+
+## Model을 통해 컨트롤러에서 뷰에 데이터 전달하기
+* 컨트롤러는 뷰가 응답 화면을 구성하는 데 필요한 데이터를 생성해서 보내 주어야 한다. 이때 사용되는 것이 Model 이다.
+
+* 이전 설문조사 코드에서 설문 제목과 답변 옵션을 객체로 만들어서 전달하는 예제를 만들어 본다.
+
+  - Question.java
+	```java
+	public class Question {
+		private String title;
+		private List<String> option;
+		
+		public Question(String title) {
+			this.title = title;
+		}
+		public Question(String title, List<String> option) {
+			this.title = title;
+			this.option = option;
+		}
+		public boolean isChoice() {
+			return option!=null && !option.isEmpty();
+		}
+		
+		public String getTitle() {
+			return title;
+		}
+		public void setTitle(String title) {
+			this.title = title;
+		}
+		public List<String> getOption() {
+			return option;
+		}
+		public void setOption(List<String> option) {
+			this.option = option;
+		}
+	}
+	```
+
+  - ServeyController.java 추가
+	```java
+  	private List<Question> createQuestion() {
+		Question q1 = new Question("당신의 역할은 무엇입니까?", Arrays.asList("백엔드","프론트","풀스택"));
+		Question q2 = new Question("많이 사용하는 개발 도구는 무엇입니까?", Arrays.asList("이클립스","인텔리제이","넷빈즈"));
+		Question q3 = new Question("하고 싶은 말을 적어주세요");
+		return Arrays.asList(q1,q2,q3);
+	}
+	
+	@GetMapping
+	public String form(Model model) {
+		List<Question> qList = createQuestion();
+		model.addAttribute("qList", qList);
+		return "survey/surveyForm";
+	}
+	```
+
+  - surveyForm.jsp 변경
+	```html
+	<c:forEach items="${qList}" var="q" varStatus="s">
+		<p>
+			${s.index+1}.${q.title}<br>
+			<c:if test="${q.choice}">
+				<c:forEach items="${q.option}" var="op">
+					<label>
+						<input type="radio" name="responses[${s.index}]" value="${op}"> ${op}
+					</label>
+				</c:forEach>
+			</c:if>
+			<c:if test="${!q.choice}">
+				<label>
+					<input type="text" name="responses[${s.index}]">
+				</label>
+			</c:if>
+		</p>
+	</c:forEach>
+	<p>
+		<label> 응답자 위치 : 
+			<input type="text" name="res.location">
+		</label>
+	</p>
+	<p>
+		<label> 응답자 나이 : 
+			<input type="text" name="res.age">
+		</label>
+	</p>
+	<input type="submit" value="전송">
+	```
+
+* 컨트롤러의 기본 기능은 두가지 특징을 가진다.
+  - Model을 이용해서 뷰에 전달할 데이터 설정
+  - 결과를 보여줄 뷰 이름을 반환
+
+* 위 두가지 기능을 한번에 처리 해줄 ModelAndView 객체를 사용할 수 있다.
