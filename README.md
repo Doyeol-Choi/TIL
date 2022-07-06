@@ -43,6 +43,7 @@
 * [스프링 MVC 시작하기](SPRING/mvc.md)
 * [MVC 동작 방법](SPRING/mvc2.md)
 * [MVC 만들기1](SPRING/make-mvc1.md)
+* [MVC 만들기2](SPRING/make-mvc2.md)
 ## 면접
 * [백엔드 기초 질문](https://haejun0317.tistory.com/238)
 * [신입 질문 리스트](https://appleg1226.tistory.com/37?category=894463)

@@ -369,12 +369,12 @@
 		</p>
 		<p>
 			<label> 비밀번호 : <br>
-				<form:input path="password"/>
+				<form:password path="password"/>
 			</label>
 		</p>
 		<p>
 			<label> 비밀번호 확인 : <br>
-				<form:input path="confirmPassword"/>
+				<form:password path="confirmPassword"/>
 			</label>
 		</p>
 		<input type="submit" value="가입 완료">
@@ -632,3 +632,34 @@
   - 결과를 보여줄 뷰 이름을 반환
 
 * 위 두가지 기능을 한번에 처리 해줄 ModelAndView 객체를 사용할 수 있다.
+
+## 주요 폼 태그
+* &lt;form&gt; => &lt;form:form&gt;
+
+* &lt;input&gt; => &lt;form:input&gt;, &lt;form:password&gt;, &lt;form:hidden&gt;
+
+* &lt;select&gt; => &lt;form:select&gt;, &lt;form:options&gt;, &lt;form:option&gt;
+
+* &lt;input type=“checkbox”&gt; => &lt;form:checkboxs&gt;, &lt;form:checkbox&gt;
+
+* &lt;input type=“radio”&gt; => &lt;form:radiobuttons&gt;, &lt;form:radiobutton&gt;
+
+* &lt;textarea&gt; => &lt;form:textarea&gt;
+
+* &lt;form:input&gt;, &lt;form:password&gt;, &lt;form:hidde&gt; => &lt;input&gt; 태그 구성
+  - Input => text 타입의 input 태그
+  - password => password 타입의 input 태그
+  - hidden => hidden 타입의 input 태그
+
+* &lt;form:select&gt;, &lt;form:options&gt;, &lt;form:option&gt; => &lt;select&gt; 태그 구성
+  - Form:select => select 태그를 생성 Options 태그를 생성하는 데 필요한 콜렉션을 전달 받을 수 있다.
+  - Form:options => 지정한 콜렉션 객체를 이용하여 option 태그를 생성
+  - Form:option => 한개의 option 태그를 생성(option에 하나하나 조금씩 수정이 필요할때 사용)
+
+* &lt;form:checkboxes&gt;, &lt;form:checkbox&gt; => &lt;input type=“checkbox"&gt; 태그 구성
+  - &lt;form:checkboxes&gt; => 커맨드 객체의 특정 프로퍼티와 관련된 checkbox 타입의 input 태그목록을 생성한다.
+  - &lt;form:checkbox&gt; => 커맨드 객체의 특정 프로퍼티와 관련된 한개의 checkbox 타입의 input 태그를 생성
+
+* &lt;form radiobuttons&gt;, &lt;form radiobutton&gt; => &lt;input type=“radio"&gt; 태그 구성 => 여러 옵션 중 하나를 선택해야 하는 경우
+  - &lt;form radiobuttons&gt; => 커맨드 객체의 특정 프로퍼티와 관련된 radio 타입의 input 태그목록을 생성한다.
+  -  &lt;form radiobutton&gt; => 커맨드 객체의 특정 프로퍼티와 관련된 한개의 radio 타입의 input 태그 목록을 생성한다.
