@@ -439,3 +439,514 @@ defaultMessage 를 출력한다.
 	</bean>
     ```
 
+* 웹 개발을 할 때 일반적으로 Get 요청시 폼을 보여주고, Post 요청시 폼 전송을 처리하는경우가 많다
+
+* 이때 입력폼과 폼 전송 처리에서 동일한 커맨드 객체를 사용하려면 다음과 같이 처리한다.
+    ```java
+    @GetMapping("login")
+        public String form(Model model) {
+            model.addAttribute("LoginCommand", new LoginCommand());
+            return "login/loginForm";
+        }
+        
+        @PostMapping("login")
+        public String submit(LoginCommand loginCommand, Errors err) {
+            ...}
+    ```
+
+* form() 메서드 에서 직접 커맨드 객체를 생성하고 submit() 메서드는 스프링 MVC 가 생성한 커맨드 객체를 전달 받는다.
+
+* form() 메서드도 커맨드 객체를 전달 받도록 구현하면 보다 간결하게 form() 메서드를 구현 할 수 있다.
+    ```java
+    @GetMapping("login")
+	public String form(LoginCommand loginCommand) {
+		return "login/loginForm";
+	}
+	
+	@PostMapping("login")
+	public String submit(LoginCommand loginCommand, Errors err) {	
+        ...}	
+    ```
+
+## 컨트롤러에서 HttpSession 사용하기
+* 로그인을 했다면 로그인한 상태를 유지해야 한다.
+
+* 로그인 상태를 유지하기 위해서 로그인 정보가 저장되어야 하는데 그 방법은 두가지 이다.
+  - 쿠키를 이용하는 방법
+  - 세션을 이용하는 방법
+
+* 스프링 컨트롤러에서 HttpSession 을 사용하려면 다음 두가지 방법 중 하나를 사용하면 된다.
+  - @RequestMapping 적용 메서드에 HttpSession 파라미터를 추가한다.
+    ```java
+	@PostMapping("login")
+	public String submit(LoginCommand loginCommand, Errors err, HttpSession session) {
+        ...}
+    ```
+  - @RequestMapping 적용 메서드에 HttpServletRequest 파라미터를 추가하고,HttpServletRequest 를 이용해서 HttpSession 을 구한다.
+    ```java
+    @GetMapping("login")
+	public String form(LoginCommand loginCommand, HttpServletRequest req) {	
+		HttpSession session = req.getSession();
+    }
+    ```
+
+  - Logincontroller.java 추가
+    ```java
+    @PostMapping("login")
+	public String submit(LoginCommand loginCommand, Errors err, HttpSession session) {	
+		
+		new LoginCommandValidator().validate(loginCommand, err);
+		
+		if(err.hasErrors()) {
+			return "login/loginForm";
+		}
+		
+		try {
+			AuthInfo authInfo = authService.authenicate(loginCommand.getEmail(), loginCommand.getPassword());
+			
+			//로그인 처리
+			session.setAttribute("authInfo", authInfo);
+			return "login/loginSuccess";			
+		} catch(IdPasswordNotMatchingException e) {
+			err.reject("idPasswordNotMatching");
+			return "login/loginForm";
+		}	
+	}
+    ```
+
+  - Main.jsp 변경
+    ```html
+    <body>
+        <h2>메인 페이지</h2>
+        <p>환영합니다.</p>
+        <c:if test="${empty authInfo}">
+            <p><a href="<c:url value='/login' />">[로그인 하기]</a></p>
+            <p><a href="<c:url value='/register/step1' />">[회원 가입하기]</a></p>	
+        </c:if>
+        <c:if test="${!empty authInfo}">
+            <p>${authInfo.name}님 환영합니다.</p>
+            <p><a href="<c:url value='/logout' />">[로그 아웃]</a></p>
+        </c:if>
+        <p><a href="<c:url value='/survey' />">[설문조사 하기]</a></p>
+    </body>
+    ```
+
+  - 로그 아웃 기능을 구성해 본다 - logoutController.java
+    ```java
+    @Controller
+    public class LogoutController {
+
+        @RequestMapping("/logout")
+        public String logout(HttpSession session) {
+            session.invalidate();	// session 정보 삭제
+            
+    		return "redirect:/main";
+        }
+    }
+    ```
+
+## 컨트롤러에서 쿠키 사용하기
+* 어떤 정보를 서버에 저장하는 것이 아닌 사용자 컴퓨터에 저장하는 것을 쿠키라고 한다.
+
+* 비밀번호와 같은 민감한 개인정보를 저장하기에 보안상 문제가 있지만 사용자의 편의를 위해서 적절하게 사용할 수있다.
+
+* 사용자의 편리함을 위해 아이디를 기억해 두었다가 다음 로그인시 아이디를 자동으로 넣어주는 기능을 구현할 때 쿠키를 사용할 수 있다.
+
+* 이메일을 자동으로 기억하는 기능을 추가해본다.
+
+* 이메일 기억하기 기능을 구현하는 방식
+  - 로그인 폼에 이메일 기억하기 옵션을 추가한다.
+  - 로그인시 이메일 기억하기 옵션을 선택하면 로그인 성공 후 쿠키에 이메일 정보를 저장한다.
+  - 쿠키를 저장할 땐 삭제되지 않도록 유효시간을 길게 설정한다.
+  - 이후 로그인 폼을 보여줄 때 이메일을 저장한 쿠키가 존재하면 입력폼에 이메일을 보여준다.
+
+* 이메일 기억하기 기능을 구현하기 위해 추가해야 할 부분
+  - loginForm.jsp : 이메일 기억하기 선택항목 추가
+  - LoginController.java - form() : 쿠키가 존재할 경우 폼에 전달할 커맨드 객체의 email 프로퍼티를 쿠키의 값으로 꺼내온다.
+  - LoginController.java - Submit() : 이메일 기억하기 옵션을 선택한 경우 로그인 성공후 이메일을 담고 있는 쿠키를 생성한다.
+
+* LoginForm.jsp 에 이메일 기억하기 체크박스를 달아둔다
+    ```html
+    <p>
+        <label> <spring:message code="password" /> : <br>
+            <form:password path="password"/>
+            <form:errors path="password" />
+        </label>
+    </p>
+    <p>
+        <label> <spring:message code="rememberEmail" /> : <br>
+            <form:checkbox path="rememberEmail"/>
+        </label>
+    </p>
+    ```
+
+* vo의 LoginCommand.java 변경
+    ```java
+    private String email;
+	private String password;
+	private boolean rememberEmail;
+	// boolean 타입의 remberEmail 필드와 getter, setter 추가
+	public boolean isRememberEmail() {
+		return rememberEmail;
+	}
+	public void setRememberEmail(boolean rememberEmail) {
+		this.rememberEmail = rememberEmail;
+	}
+    ```
+
+* 쿠키를 생성하려면 HttpServletResponse 객체가 필요하다
+    ```java
+    @PostMapping("login")
+	public String submit(LoginCommand loginCommand, Errors err, HttpSession session, HttpServletResponse res) {	
+		
+		// 로그인 성공 여부와 상관없이 이메일 저장
+		Cookie rememberCookie = new Cookie("remember", loginCommand.getEmail());
+		if(loginCommand.isRememberEmail()) {
+			rememberCookie.setMaxAge(60*60*24*30);
+		}else {
+			rememberCookie.setMaxAge(0);
+		}
+		res.addCookie(rememberCookie);
+    ```
+
+* 스프링 MVC 에서 쿠키를 사용하는 방법 중 하나는 @CookieValue 애노테이션을 사용하는 것이다.
+
+* @RequestMapping 적용 메서드의 Cookie 타입 파라미터를 적용한다. 이를 통해 쉽게 쿠키 파라미터를 전달 받는다.
+    ```java
+    @GetMapping("login")
+	public String form(LoginCommand loginCommand, HttpServletRequest req, @CookieValue(value="remember", required=false)Cookie rememberEmail) {
+		// 세션을 가져올때 HttpSession session을 쓰는게 편하지만 이와같은 방법도 있다.
+		// @CookieValue(value="remember", required=false)는 remember 쿠키를 불러오는 어노테이션에 required=false를 통해 없다면 패스 시킬 수 있다.
+		HttpSession session = req.getSession();
+		
+		if(session.getAttribute("authInfo")!=null) {
+			return "main";
+		}
+		if(rememberEmail != null) {
+			loginCommand.setEmail(rememberEmail.getValue());
+			loginCommand.setRememberEmail(true);
+		}
+		
+		return "login/loginForm";
+	}
+    ```
+
+* LoginController 를 수정한다.
+    ```java
+    @GetMapping("login")
+	public String form(LoginCommand loginCommand, HttpServletRequest req, @CookieValue(value="remember", required=false)Cookie rememberEmail) {
+		// 세션을 가져올때 HttpSession session을 쓰는게 편하지만 이와같은 방법도 있다.
+		// @CookieValue(value="remember", required=false)는 remember 쿠키를 불러오는 어노테이션에 required=false를 통해 없다면 패스 시킬 수 있다.
+		HttpSession session = req.getSession();
+		
+		if(session.getAttribute("authInfo")!=null) {
+			return "main";
+		}
+		if(rememberEmail != null) {
+			loginCommand.setEmail(rememberEmail.getValue());
+			loginCommand.setRememberEmail(true);
+		}
+		
+		return "login/loginForm";
+	}
+    ```
+
+* 쿠키의 전송 범위
+  - 미지정 : 쿠키를 생성했던 URL 범위에서 전송
+  - / : 웹 애플리케이션의 모든 URL 범위에서 전송
+  - /login : /login/xx ~~요청시 전송
+  - /edits : /edits/xx ~~ 요청시 전송, /edits/subDir /xx 요청시 전송
+  - /edits/subDir/ : /edits/subDir/xx 요청시 전송
+
+## 비밀번호 변경 기능 구현
+* vo
+  - ChangePwdCommand
+* service
+  - ChangePasswordService
+* validator
+  - ChangePwdCommandValidator
+* controllor
+  - ChangePwdController
+* jsp
+  - changePwdForm
+  - changedPwd
+* Properties
+* xml
+
+  - ChangePwdCommand
+    ```java
+    public class ChangePwdCommand {
+        private String currentPassword;
+        private String newPassword;
+        
+        public String getCurrentPassword() {
+            return currentPassword;
+        }
+        public void setCurrentPassword(String currentPassword) {
+            this.currentPassword = currentPassword;
+        }
+        public String getNewPassword() {
+            return newPassword;
+        }
+        public void setNewPassword(String newPassword) {
+            this.newPassword = newPassword;
+        }
+    }
+    ```
+  - ChangePasswordService
+    ```java
+    public class ChangePasswordService {
+ 
+        private MemberDao dao;
+        
+        public ChangePasswordService(MemberDao memberDao) {
+            this.dao = memberDao;	// 생성자를 통해 주입받는다. DI
+        }
+        
+        public void changePassword(String email, String oldPwd, String newPwd) {
+            Member member = dao.selectByEmail(email);
+            
+            if(member == null) {
+                throw new MemberNotFoundException();
+            }
+            
+            member.changePassword(oldPwd, newPwd);
+            
+            dao.updateMember(member);
+        }	
+    }
+    ```
+  - ChangePwdCommandValidator
+    ```java
+    public class ChangePwdCommandValidator implements Validator {
+        
+        @Override
+        public boolean supports(Class<?> clazz) {
+            return ChangePwdCommand.class.isAssignableFrom(clazz);
+        }
+
+        @Override
+        public void validate(Object target, Errors errors) {
+            ValidationUtils.rejectIfEmptyOrWhitespace(errors, "currentPassword", "required");
+            ValidationUtils.rejectIfEmptyOrWhitespace(errors, "newPassword", "required");
+        }
+    }
+    ```
+  - ChangePwdController
+    ```java
+    @Controller
+    @RequestMapping("/edit")
+    public class ChangePwdController {
+        // 비밀번호 변경시 서비스 객체의 메서드를 사용하기위해 주입해놓기
+        private ChangePasswordService changePasswordService;
+
+        public void setChangePasswordService(ChangePasswordService changePasswordService) {
+            this.changePasswordService = changePasswordService;
+        }
+
+        // 1. Model 객체를 이용하는 방법
+    //	@GetMapping("/changePassword")
+    //	public String form(Model model) {
+    //		model.addAttribute("changePwdCommand", new ChangePwdCommand());
+    //		return "edit/changePwdForm";
+    //	}
+        
+        // 2. @ModelAttribute 어노테이션을 이용하는 방법
+    //	@GetMapping("/changePassword")
+    //	public String form(@ModelAttribute("changePwdCommand")ChangePwdCommand changePwdCommand) {
+    //
+    //		return "edit/changePwdForm";
+    //	}
+        
+
+        // 3. post하고 같은 커맨드 객체를 사용하는 경우 => @ModelAttribute를 생략할 수 있다.
+        @GetMapping("/changePassword")
+        public String form(ChangePwdCommand changePwdCommand, HttpSession session) {
+            AuthInfo authInfo = (AuthInfo)session.getAttribute("authInfo");	
+            // 로그인을 안한 사람이 바로 비밀번호 변경 페이지로 접근할 경우 로그인 페이지로 이동
+            if(authInfo == null) {
+                return "redirect:/login";
+            }
+            
+            return "edit/changePwdForm";
+        }
+        
+        @PostMapping("/changePassword")
+        public String submit(ChangePwdCommand changePwdCommand, Errors error, HttpSession session) {
+            
+            new ChangePwdCommandValidator().validate(changePwdCommand, error);
+            
+            if(error.hasErrors()) {
+                return "edit/changePwdForm";
+            }
+            // 비밀번호 변경시 필요한 이메일 정보를 가져오기 위해 세션에서 호출
+            AuthInfo authInfo = (AuthInfo)session.getAttribute("authInfo");	
+            
+            try {
+                // 비밀번호 변경을 위해 서비스객체에서 메서드 호출
+                changePasswordService.changePassword(authInfo.getEmail(), changePwdCommand.getCurrentPassword(), changePwdCommand.getNewPassword());
+                
+                return "edit/changedPwd";
+            } catch(IdPasswordNotMatchingException err) {	// 기존 비밀번호가 틀렸을때 오류 발생
+                error.rejectValue("currentPassword", "notmatching");
+                return "edit/changePwdForm";
+            }
+        }
+    }
+    ```
+  - changePwdForm
+    ```html
+    <title><spring:message code="change.pwd.title" /></title>
+    </head>
+    <body>
+        <form:form modelAttribute="changePwdCommand">
+            <p>
+                <label> <spring:message code="currentPassword" /> : <br>
+                    <form:password path="currentPassword" />
+                    <form:errors path="currentPassword" />
+                </label>
+            </p>
+            <p>
+                <label> <spring:message code="newPassword" /> : <br>
+                    <form:password path="newPassword" />
+                    <form:errors path="newPassword" />
+                </label>
+            </p>
+            <input type="submit" value="<spring:message code='change.btn' />">
+        </form:form>
+    </body>
+    ```
+  - changedPwd
+    ```html
+    <title><spring:message code="change.pwd.title" /></title>
+    </head>
+    <body>
+        <p>
+            <spring:message code="change.pwd.done" />
+        </p>
+        <p>
+            <a href="<c:url value='/main' />"><spring:message code="go.main" /></a>
+        </p>
+    </body>
+    ```
+  - xml
+    ```xml
+    <bean class="spring.controller.ChangePwdController">
+		<property name="changePasswordService" ref="changePwdSvc" />
+	</bean>
+    ```
+
+## 인터셉터 사용하기
+* 비밀번호 변경 폼은 일반적으로 로그인이 진행된 이후에 나와야 할 화면이다.
+
+* 그러나 직접 주소창에 http://localhost:8090/ex09/edits/changePassword 입력하면 비밀번호 변경페이지가 나타난다.
+
+* 로그인하지 않을 때 비밀번호 변경 폼을 요청하면 로그인 화면으로 이동시키는 것이 좋다.
+
+    ```java
+    @GetMapping("/changePassword")
+	public String form(ChangePwdCommand changePwdCommand, HttpSession session) {
+		AuthInfo authInfo = (AuthInfo)session.getAttribute("authInfo");	
+		// 로그인을 안한 사람이 바로 비밀번호 변경 페이지로 접근할 경우 로그인 페이지로 이동
+		if(authInfo == null) {
+			return "redirect:/login";
+		}
+		
+		return "edit/changePwdForm";
+	}
+    ```
+
+* 다만 실제 웹 애플리케이션은 로그인 이후에 진행되는 기능이 비밀번호 변경말고도 매우 많을 수 있다.
+
+* 이런 경우 앞서 본 코드를 일일이 넣는 것은 많은 중복을 발생시킨다
+
+* 이때 여러 컨트롤러에 공통의 기능을 적용할 때 사용 가능한 것이 인터셉터이다.
+
+* 스프링은 인터셉터 기능을 지원하기 위해 HandlerInterceptor 인터페이스를 제공한다.
+
+* HandlerInterceptor인터페이스 구현하기, HandlerInterceptor 인터페이스는 3가지 시점에 공통의 기능을 삽입할 수 있다.
+  - 컨트롤러 핸들러 실행 전
+  - 컨트롤러 핸들러 실행 후, 뷰를 실행하기 전
+  - 뷰를 실행한 이후
+
+* HandlerInterceptor 인터페이스는 3 가지 시점을 처리하기 위한 3 가지 메서드를 제공한다. (메서드 이름만 체크)
+  - preHandle()
+  - postHandle()
+  - afterCompletion()
+
+* preHandle메서드는 컨트롤러 객체가 실행하기 전 필요한 기능을 구현할 때 사용
+  - false 를 반환하면 컨트롤러를 실행하지 않는다
+
+* postHandle 메서드는 컨트롤러가 정상적으로 실행된 이후에 추가 기능을 구현할 때 사용
+
+* afterCompletion 메서드는 뷰가 클라이언트에 응답을 전송한 이후에 실행된다
+  - 컨트롤러에서 예외가 발생하면 메서드의 매개값으로 전달한다.
+  - 주로 예외의 로그를 남기거나 후처리등을 진행한다.
+
+![HandlerInterceptor](img/handlerAdapter.png)
+
+* HandlerInterceptor 인터페이스 설정하기
+
+* 적용 위치를 지정해 주어야 하는데 이때 사용되는 태그는 &lt;mvc:interceptor&gt; 와 &lt;mvc:mapping&gt; 태그이다.
+
+* 이 태그를 controller.xml 에 추가한다.
+
+* &lt;mvc:interceptors&gt; : 여러개의 인터셉터를 등록한다.
+
+* &lt;mvc:interceptor&gt; : 하나의 인터셉터를 설정한다. 중첩된 bean 태그로 인터셉터로 사용될 객체를 지정한다.
+
+* &lt;mvc:mapping&gt; : 인터셉터를 적용할 경로를 지정한다.
+
+* 인터셉터 작성
+    ```java
+    public class AuthCheckIntercepter extends HandlerInterceptorAdapter {
+
+	// 로그인이 필요한 기능을 사용하기 전에 로그인 체크를 해야하기때문에 preHandle만 오버라이드
+	@Override
+	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+			throws Exception {
+            
+            HttpSession session = request.getSession();
+            
+            if(session!=null) {
+                AuthInfo authInfo = (AuthInfo)session.getAttribute("authInfo");
+                if(authInfo != null) {
+                    return true;
+                }
+            }
+            response.sendRedirect(request.getContextPath()+"/login");
+            return false;
+        }
+    }
+    ```
+  - spring-mvc.xml
+    ```xml
+    <!-- 인터셉터 적용 -->
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<!-- 1. 인터셉터를 어디에 적용할 것인가? -->
+			<mvc:mapping path="/edit/**" />
+			<!-- 2. 어떤 인터셉터를 사용할 것인가? -->
+			<bean class="spring.intercepter.AuthCheckIntercepter" />
+		</mvc:interceptor>
+	</mvc:interceptors>
+    ```
+  - controller 변경
+    ```java
+    @GetMapping("/changePassword")
+	public String form(ChangePwdCommand changePwdCommand, HttpSession session) {
+    //		AuthInfo authInfo = (AuthInfo)session.getAttribute("authInfo");	
+    //		// 로그인을 안한 사람이 바로 비밀번호 변경 페이지로 접근할 경우 로그인 페이지로 이동
+    //		if(authInfo == null) {
+    //			return "redirect:/login";
+    //		}
+            // 기존 코드를 주석처리해서 지움
+            return "edit/changePwdForm";
+        }
+    ```
+* 경로 패턴
+  - *: 0 개 또는 그 이상의 글자
+  - ? : 1 개 글자
+  - ** : 0 개 또는 그 이상의 디렉터리
+
+* &lt;mvc:mapping&gt; 에 지정된 경로중 일부 경로를 제외하고 싶을 때는 &lt;mvc:exclude-mapping&gt; 을 사용한다.
