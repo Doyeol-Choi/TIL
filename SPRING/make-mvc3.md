@@ -142,4 +142,181 @@
     </body>
     ```
 
-* 날짜를 입력해야 하는 뷰에 형식에 맞지 않는 날짜를 입력하면 오류가 발생한다.
+## @PathVariable을 이용한 경로 변수 처리
+* ID가 10 인 회원 정보를 조회하기 위한 URL 구성  
+=> ?ID=10
+
+* 위와 같이 해당 ID 값을 요청 경로에 포함시키는 방법으로 사용한다.
+
+* 이렇게 경로의 특정 부분의 값이 고정되지 않고 달라 질 수 있는 것이 @PathVariable 이다.
+
+* DAO 객체에 다음 메서드를 추가해본다.
+    ```java
+    // ID 번호를 통해 회원 조회를 하기 위한 메서드
+	public Member selectById(Long id) {
+		String sql = "SELECT * FROM members WHERE id=?";
+		
+		List<Member> result = jdbcTemplate.query(sql, new RowMapper<Member>() {
+
+			@Override
+			public Member mapRow(ResultSet rs, int rowNum) throws SQLException {
+				Member m = new Member(
+						rs.getString("email"),
+						rs.getString("password"),
+						rs.getString("name"),
+						rs.getTimestamp("regDate"));
+				m.setId(rs.getLong("id"));
+				return m;
+			}}, id);
+		
+		return result.isEmpty()?null:result.get(0);
+	}
+    ```
+
+* 컨트롤러를 만들어본다.
+    ```java
+    @Controller
+    public class MemberDetailController {
+        
+        private MemberDao dao;
+        
+        public void setDao(MemberDao dao) {
+            this.dao = dao;
+        }
+
+        @GetMapping("member/detail/{id}")
+        public String detail(@PathVariable("id") Long memberId, Model model) {
+            // 특정 누군가의 정보를 보고싶은 기능
+            // 필요한 정보(누군가를 식별할 수 있는 정보) id => memberId
+            // 보여주고 싶은 정보는 누군가의 정보 member => Model
+            
+            Member member = dao.selectById(memberId);
+            
+            if(member == null) {
+                throw new MemberNotFoundException();
+            }
+            
+            model.addAttribute("member", member);
+            
+            return "member/memberDetail";
+        }
+    }
+    ```
+
+* 컨트롤러를 빈으로 등록합니다.
+    ```xml
+    <bean class="spring.controller.MemberDetailController">
+		<property name="dao" ref="dao" />
+	</bean>
+    ```
+
+* memberList.jsp 수정
+    ```html
+    <c:forEach var="member" items="${members}">
+        <tr>
+            <td>${member.id}</td>
+            <!-- email부분에 a태그 추가 -->
+            <td><a href="<c:url value='/member/detail/${member.id}' />">${member.email}</a></td>
+            <td>${member.name}</td>
+            <td><fmt:formatDate value="${member.registerDate}" pattern="yyyy-MM-dd" /></td>
+        </tr>
+    </c:forEach>
+    ```
+
+* 뷰페이지를 생성한다.
+    ```html
+    <title><spring:message code="member" /></title>
+    </head>
+    <body>
+        <p><spring:message code="member.id" /> : ${member.id}</p>
+        <p><spring:message code="email" /> : ${member.email}</p>
+        <p><spring:message code="name" /> : ${member.name}</p>
+        <p><spring:message code="register.info" /> : <fmt:formatDate value="${member.registerDate}" pattern="yyyy-MM-dd HH:mm" /></p>
+        <br>
+        <p>
+            <a href="<c:url value='/member/list' />">[날짜별 회원 정보 보기]</a>
+        </p>
+    </body>
+    ```
+
+## 컨트롤러 예외 처리하기
+* ID 가 존재할 때는 정상적으로 뷰페이지가 출력이 되지만 ID 가 존재하지 않으면 500 번 에러페이지를 보여준다.
+
+* 또한 ID 값은 long 타입인데 문자열 등을 입력하면 역시 형변환 불가로 인한 400 번 에러페이지를 보여준다.
+
+* 이런 여러가지 에러가 발생했을 때 적절한 에러 화면을 보여 주는 방법이 존재한다.
+
+* @ExceptionHandler 어노테이션을 사용하는 방법이다.
+
+* @ExceptionHandler가 적용된 메서드가 존재하면 스프링 MVC 는 이 메서드가 예외를 처리하도록 한다.
+
+* 컨트롤러에서 예외처리를 위한 메서드를 만든다.
+    ```java
+    @ExceptionHandler(TypeMismatchException.class)
+	public String handlerTypeMismatchException(TypeMismatchException err) {
+		// 형변환 오류(Long 타입이 아닐때)
+		return "member/ivalidid";
+	}
+	
+	@ExceptionHandler(MemberNotFoundException.class)
+	public String handlerNotFoundException(MemberNotFoundException err) {
+		// 없는 id조회 오류
+		return "member/noMember";
+	}
+    ```
+
+* 각 예외 페이지를 보여주기 위한 뷰페이지를 제작한다.
+    ```html
+    <title>오류</title>
+    </head>
+    <body>
+        <p>잘못된 요청입니다.</p>
+    </body>
+
+    <title>회원 업음</title>
+    </head>
+    <body>
+        <p> 존재하지 않는 회원입니다. </p>
+    </body>
+    ```
+
+* 다수의 일반 예외를 모아서 처리하기 위한 컨트롤러를 만들 수 있다.
+  - 컨트롤러 생성
+    ```java
+    @ControllerAdvice("spring.controller")	// 패키지를 적어준다.
+    public class CommonExceptionHandler {	// 작동원리 AOP
+        
+        
+        @ExceptionHandler(TypeMismatchException.class)
+        public String handlerTypeMismatchException(TypeMismatchException err) {
+            // 형변환 오류(Long 타입이 아닐때)
+            return "member/ivalidid";
+        }
+        
+        @ExceptionHandler(MemberNotFoundException.class)
+        public String handlerMemberNotFoundException(MemberNotFoundException err) {
+            // 없는 id조회 오류
+            return "member/noMember";
+        }
+        
+        @ExceptionHandler(RuntimeException.class)
+        public String handlerRuntimeException(RuntimeException err) {
+            return "error/commonException";
+        }
+    }
+    ```
+  - xml에 빈으로 등록
+    ```xml
+    <bean class="spring.controller.CommonExceptionHandler" />
+    ```
+  - 뷰페이지 생성
+    ```html
+    <title>일반적인 예외 화면</title>
+    </head>
+    <body>
+        <p> 
+            페이지를 이용하는 데 문제가 발생했습니다.<br>
+            담당자(webmaster@green.co.kr)에게 문의하세요.
+        </p>
+    </body>
+    ```
