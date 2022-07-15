@@ -47,6 +47,8 @@
 * [MVC 만들기3](SPRING/make-mvc3.md)
 * [MVC 자바설정](SPRING/xmlChangeMvc.md)
 * [프로필과 프로퍼티](SPRING/profileAndProperty.md)
+## MyBatis
+* [MyBatis기초](MyBatis/basis.md)
 ## 면접
 * [백엔드 기초 질문](https://haejun0317.tistory.com/238)
 * [신입 질문 리스트](https://appleg1226.tistory.com/37?category=894463)
