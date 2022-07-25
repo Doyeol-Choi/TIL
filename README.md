@@ -47,8 +47,15 @@
 * [MVC 만들기3](SPRING/make-mvc3.md)
 * [MVC 자바설정](SPRING/xmlChangeMvc.md)
 * [프로필과 프로퍼티](SPRING/profileAndProperty.md)
+## Spring boot
+* [boot 시작하기](SPRINGBOOT/mackproject.md)
+* [Lombok](SPRINGBOOT/lombok.md)
+* [thymeleaf](SPRINGBOOT/thymeleaf.md)
+* [Spring Security](https://mangkyu.tistory.com/76)
+* [Spring Security config](SPRINGBOOT/security.md)
 ## MyBatis
 * [MyBatis기초](MyBatis/basis.md)
+* [Spring Boot에 사용](MyBatis/springboot.md)
 ## 면접
 * [백엔드 기초 질문](https://haejun0317.tistory.com/238)
 * [신입 질문 리스트](https://appleg1226.tistory.com/37?category=894463)
@@ -58,7 +65,12 @@
 * [security2](https://nahwasa.com/entry/%EC%8A%A4%ED%94%84%EB%A7%81%EB%B6%80%ED%8A%B8-Spring-Security-%EA%B8%B0%EB%B3%B8-%EC%84%B8%ED%8C%85-%EC%8A%A4%ED%94%84%EB%A7%81-%EC%8B%9C%ED%81%90%EB%A6%AC%ED%8B%B0)
 * [security3](https://ncucu.me/137)
 * [security DB 로그인](https://velog.io/@limsubin/Spring-Boot-spring-security-%EB%A1%9C-%EB%A1%9C%EA%B7%B8%EC%9D%B8%EC%9D%84-%EA%B5%AC%ED%98%84%ED%95%98%EC%9E%90)
+* [회원가입 유효성 검사](https://victorydntmd.tistory.com/332)
+* [Google 로그인](https://lotuus.tistory.com/79)
+* [Naver 로그인](https://lotuus.tistory.com/80)
+* [카카오 로그인](https://lotuus.tistory.com/104)
 * [security cors](https://toycoms.tistory.com/37)
+* [OAuth Cors 문제](https://sun-22.tistory.com/60)
 * [security 최신버전 상속문제](https://ssdragon.tistory.com/108)
 * [security 암호화](https://kimvampa.tistory.com/129)
 * [my batis 인터페이스](https://jung-story.tistory.com/128)
