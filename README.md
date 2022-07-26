@@ -65,6 +65,7 @@
 * [security2](https://nahwasa.com/entry/%EC%8A%A4%ED%94%84%EB%A7%81%EB%B6%80%ED%8A%B8-Spring-Security-%EA%B8%B0%EB%B3%B8-%EC%84%B8%ED%8C%85-%EC%8A%A4%ED%94%84%EB%A7%81-%EC%8B%9C%ED%81%90%EB%A6%AC%ED%8B%B0)
 * [security3](https://ncucu.me/137)
 * [security DB 로그인](https://velog.io/@limsubin/Spring-Boot-spring-security-%EB%A1%9C-%EB%A1%9C%EA%B7%B8%EC%9D%B8%EC%9D%84-%EA%B5%AC%ED%98%84%ED%95%98%EC%9E%90)
+* [로그인 아이디 저장](https://truecode-95.tistory.com/155)
 * [회원가입 유효성 검사](https://victorydntmd.tistory.com/332)
 * [Google 로그인](https://lotuus.tistory.com/79)
 * [Naver 로그인](https://lotuus.tistory.com/80)
