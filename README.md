@@ -66,6 +66,7 @@
 * [security3](https://ncucu.me/137)
 * [security DB 로그인](https://velog.io/@limsubin/Spring-Boot-spring-security-%EB%A1%9C-%EB%A1%9C%EA%B7%B8%EC%9D%B8%EC%9D%84-%EA%B5%AC%ED%98%84%ED%95%98%EC%9E%90)
 * [로그인 아이디 저장](https://truecode-95.tistory.com/155)
+* [rememberMe](https://jaimemin.tistory.com/2079)
 * [회원가입 유효성 검사](https://victorydntmd.tistory.com/332)
 * [Google 로그인](https://lotuus.tistory.com/79)
 * [Naver 로그인](https://lotuus.tistory.com/80)
@@ -76,3 +77,5 @@
 * [security 암호화](https://kimvampa.tistory.com/129)
 * [my batis 인터페이스](https://jung-story.tistory.com/128)
 * [my batis 연동](https://hanhyx.tistory.com/39)
+
+* [samesite](https://velog.io/@kwakwoohyun/%EC%9D%B4%EC%8A%88%EC%B2%98%EB%A6%AC-spring-boot-local-cookie)
