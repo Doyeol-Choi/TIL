@@ -77,5 +77,7 @@
 * [security 암호화](https://kimvampa.tistory.com/129)
 * [my batis 인터페이스](https://jung-story.tistory.com/128)
 * [my batis 연동](https://hanhyx.tistory.com/39)
-
+* [파일 업로드시 경로](https://m.blog.naver.com/PostView.naver?isHttpsRedirect=true&blogId=tomatogun&logNo=100160702448)
 * [samesite](https://velog.io/@kwakwoohyun/%EC%9D%B4%EC%8A%88%EC%B2%98%EB%A6%AC-spring-boot-local-cookie)
+
+* [배포](https://loosie.tistory.com/m/403)
