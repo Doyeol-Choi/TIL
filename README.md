@@ -80,4 +80,5 @@
 * [파일 업로드시 경로](https://m.blog.naver.com/PostView.naver?isHttpsRedirect=true&blogId=tomatogun&logNo=100160702448)
 * [samesite](https://velog.io/@kwakwoohyun/%EC%9D%B4%EC%8A%88%EC%B2%98%EB%A6%AC-spring-boot-local-cookie)
 
-* [배포](https://loosie.tistory.com/m/403)
+* [AWS](https://loosie.tistory.com/m/403)
+* [오라클 클라우드](https://hoing.io/archives/24492)
