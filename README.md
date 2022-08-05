@@ -29,9 +29,12 @@
 * [PLSQL](SQL/PLSQL.md)
 * [프로시저](SQL/procedure.md)
 * [설계](SQL/plan.md)
+* [추가내용](SQL/plus.md)
 ## GIT
 * [GIT BASH 기초](GIT/git.md)
-* [GITHUB md 사용하기](https://goddaehee.tistory.com/307)
+* [자주 쓰게 되는 명령어](GIT/manytimes.md)
+## MarkDown
+* [md 사용하기](https://goddaehee.tistory.com/307)
 ## Spring
 * [Spring 시작하기](SPRING/start.md)
 * [스프링 DI](SPRING/DI.md)
@@ -81,4 +84,11 @@
 * [samesite](https://velog.io/@kwakwoohyun/%EC%9D%B4%EC%8A%88%EC%B2%98%EB%A6%AC-spring-boot-local-cookie)
 
 * [AWS](https://loosie.tistory.com/m/403)
-* [오라클 클라우드](https://hoing.io/archives/24492)
+* [오라클 클라우드 1.배포](https://velog.io/@away0419/spring-boot%EC%98%A4%EB%9D%BC%ED%81%B4-%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C-war-%EB%B0%B0%ED%8F%AC-1.%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C-%EA%B0%80%EC%9E%85-%EB%B0%8F-%EC%9D%B8%EC%8A%A4%ED%84%B4%EC%8A%A4-%EC%83%9D%EC%84%B1)
+* [오라클 클라우드 2.jdk, 톰캣 설치](https://velog.io/@away0419/spring-boot%EC%98%A4%EB%9D%BC%ED%81%B4-%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C-war-%EB%B0%B0%ED%8F%AC-2.JDK-%EB%B0%8F-Tomcat9-%EC%84%A4%EC%B9%98)
+* [오라클 클라우드 3. DB 생성](https://velog.io/@away0419/spring-boot%EC%98%A4%EB%9D%BC%ED%81%B4-%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C-war-%EB%B0%B0%ED%8F%AC-1.%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C-DB%EC%9E%90%EC%9C%A8%EC%9A%B4%EC%98%81%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98%EC%B2%98%EB%A6%ACAPT-%EC%83%9D%EC%84%B1%ED%95%98%EA%B8%B0)
+* [오라클 클라우드 4. war 배포](https://velog.io/@away0419/spring-boot%EC%98%A4%EB%9D%BC%ED%81%B4-%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C-war-%EB%B0%B0%ED%8F%AC-4.-WAR-%EB%B0%B0%ED%8F%AC%ED%95%98%EA%B8%B0)
+
+* [https 적용](https://taewooblog.tistory.com/142)
+* [Spring OCI java SDK1](https://riverblue.tistory.com/53)
+* [Spring OCI java SDK2](https://riverblue.tistory.com/54?category=753253)
