@@ -92,3 +92,6 @@
 * [https 적용](https://taewooblog.tistory.com/142)
 * [Spring OCI java SDK1](https://riverblue.tistory.com/53)
 * [Spring OCI java SDK2](https://riverblue.tistory.com/54?category=753253)
+
+* [페이징](https://hanhyx.tistory.com/46)
+* [이미지 경로](https://kimfk567.tistory.com/85)
