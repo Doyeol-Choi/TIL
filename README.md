@@ -95,3 +95,5 @@
 
 * [페이징](https://hanhyx.tistory.com/46)
 * [이미지 경로](https://kimfk567.tistory.com/85)
+
+* [오라클클라우드 도메인 연결](https://m.blog.naver.com/bb_/222167412684)
